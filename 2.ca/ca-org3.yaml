@@ -19,7 +19,7 @@ spec:
       containers:
 
         - name: ca-org3
-          image: hyperledger/fabric-ca:1.4.9
+          image: hyperledger/fabric-ca:1.5.6
           imagePullPolicy: "Always"
           command:
             [
