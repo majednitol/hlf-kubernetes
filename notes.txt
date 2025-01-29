@@ -1,0 +1,49 @@
+peer0-org1
+basic:504c85ba9c9455b54d9cc7217050e5f60d7784a1a55fe47a2bc0b0cdb0c84a35
+peer0-org2
+package identifier: basic:3dee8d77ca0fa1d838dd584f30d53d9ccc48763600d2f627d70c89ce84512d4a
+peer0-org3
+package identifier: basic:a0ad799d9703ea46bfedfe958c9c540fb1e3bbca8f2bc49f8d9508304e6858dd
+
+approve chaincode peer0-org1
+peer lifecycle chaincode approveformyorg --channelID mychannel --name basic --version 1.0 --init-required --package-id basic:504c85ba9c9455b54d9cc7217050e5f60d7784a1a55fe47a2bc0b0cdb0c84a35 --sequence 1 -o orderer:7050 --tls --cafile $ORDERER_CA 
+
+
+approve chaincode peer0-org2
+peer lifecycle chaincode approveformyorg --channelID mychannel --name basic --version 1.0 --init-required --package-id basic:3dee8d77ca0fa1d838dd584f30d53d9ccc48763600d2f627d70c89ce84512d4a --sequence 1 -o orderer:7050 --tls --cafile $ORDERER_CA 
+
+
+approve chaincode peer0-org3
+peer lifecycle chaincode approveformyorg --channelID mychannel --name basic --version 1.0 --init-required --package-id basic:a0ad799d9703ea46bfedfe958c9c540fb1e3bbca8f2bc49f8d9508304e6858dd --sequence 1 -o orderer:7050 --tls --cafile $ORDERER_CA 
+
+
+
+checkcommitreadiness
+peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name basic --version 1.0 --init-required --sequence 1 -o -orderer:7050 --tls --cafile $ORDERER_CA
+
+
+commit chaincode
+peer lifecycle chaincode commit -o orderer:7050 --channelID mychannel --name basic --version 1.0 --sequence 1 --init-required --tls true --cafile $ORDERER_CA --peerAddresses peer0-org1:7051 --tlsRootCertFiles /organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses peer0-org2:7051 --tlsRootCertFiles /organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --peerAddresses peer0-org3:7051 --tlsRootCertFiles /organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt
+
+//verfying
+peer lifecycle chaincode querycommitted -C mychannel
+
+ InitLedger command
+peer chaincode invoke -o orderer:7050 --isInit --tls true --cafile $ORDERER_CA -C mychannel -n basic --peerAddresses peer0-org1:7051 --tlsRootCertFiles /organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses peer0-org2:7051 --tlsRootCertFiles /organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --peerAddresses peer0-org3:7051 --tlsRootCertFiles /organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt -c '{"Args":["InitLedger"]}' --waitForEvent
+
+
+invoke command
+peer chaincode invoke -o orderer:7050 --tls true --cafile $ORDERER_CA -C mychannel -n basic --peerAddresses peer0-org1:7051 --tlsRootCertFiles /organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses peer0-org2:7051 --tlsRootCertFiles /organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --peerAddresses peer0-org3:7051 --tlsRootCertFiles /organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt -c '{"Args":["SetDoctor","2","Dr. Jane Smith","Pediatrics","150.0","12345","10","1985-06-01","jane.smith@example.com"]}' --waitForEvent
+
+
+query command
+peer chaincode query -C mychannel -n basic -c '{"Args":["GetDoctor","2"]}'
+
+// access couch db
+kubectl port-forward services/peer0-org1 5984:5984 [http://localhost:5984/_utils/]
+kubectl port-forward services/peer0-org2 5983:5984 
+
+// create connection profile for client
+go to nfs_clientshare
+
+./scripts/ccp.sh 

@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+spec:
+  rules:
+    # Rule for direct access using the ELB hostname
+    - host: a54040ef5bc9446e2b521f65d568900d-ad19aeeb34a3680f.elb.us-east-1.amazonaws.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 4000
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+          - path: /explorer
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 8080
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
+
+  # Uncomment the below section if you want TLS enabled in the future
+  # tls:
+  #   - hosts:
+  #       - ad138f92e9211416d8e780faa5f9716c-e9380dd2942acabe.elb.us-east-1.amazonaws.com
+  #     secretName: tls-cert
