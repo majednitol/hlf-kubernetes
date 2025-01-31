@@ -24,4 +24,4 @@
 
 cd usr/share/nginx/html
 
-sudo cp -R prerequite ./nfs_clientshare
+sudo cp -R prerequsite/* ../nfs_clientshare

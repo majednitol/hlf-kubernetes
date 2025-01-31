@@ -19,7 +19,7 @@ spec:
       containers:
 
         - name: ca-orderer
-          image: hyperledger/fabric-ca:latest
+          image: hyperledger/fabric-ca:1.5.13
           imagePullPolicy: "IfNotPresent"
           command:
             [

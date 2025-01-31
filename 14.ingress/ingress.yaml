@@ -9,7 +9,7 @@ metadata:
 spec:
   rules:
     # Rule for direct access using the ELB hostname
-    - host: a54040ef5bc9446e2b521f65d568900d-ad19aeeb34a3680f.elb.us-east-1.amazonaws.com
+    - host: a4a2eb50674e64db79ed756a815c3a5a-bf06feeb075253b3.elb.us-east-1.amazonaws.com
       http:
         paths:
           - path: /

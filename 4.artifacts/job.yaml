@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: artifacts
-          image: hyperledger/fabric-tools:2.5
+          image: hyperledger/fabric-tools:2.3
           workingDir: /
           volumeMounts:
             - mountPath: /organizations

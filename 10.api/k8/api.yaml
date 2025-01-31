@@ -34,7 +34,7 @@ spec:
             requests:
               memory: "400Mi"
               cpu: "300m"
-          image: majedur708/hlf-api:11.9
+          image: majedur708/hlf-api:13.0
           imagePullPolicy: Always
           volumeMounts:
             - name: data
