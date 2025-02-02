@@ -12,7 +12,47 @@ export async function getPharmacyCompany(request) {
         console.log(error)
     }
 }
-
+export async function GetDiseaseNames(request) {
+    try {
+      const companyID = request.companyID
+      console.log("companyID", companyID)
+      const contract = await smartContract(request, companyID)
+      let result = await contract.evaluateTransaction("GetDiseaseNames");
+      console.log("result", result)
+      return JSON.parse(result);
+    } catch (error) {
+      console.log(error)
+    }
+}
+export async function GetPendingRequesterUser(request) {
+    try {
+      const companyID = request.companyID
+      console.log("companyID", companyID)
+      const contract = await smartContract(request, companyID)
+      let result = await contract.evaluateTransaction("GetPendingRequesterUser");
+      console.log("result", result)
+      return JSON.parse(result);
+    } catch (error) {
+      console.log(error)
+    }
+}
+  
+export async function RequestPatientData(request) {
+    try {
+      const companyID = request.companyID
+      const disease = request.disease
+      const contract = await smartContract(request, companyID)
+      let result = await contract.submitTransaction(
+        "RequestPatientData", companyID, disease
+      );
+      console.log("Transaction Result:", result);
+  
+      return result;
+    } catch (error) {
+      console.error("Error in AcceptByPatient:", error);
+      throw error;
+    }
+  }
 export async function setPharmacyCompany(request) {
     try {
         let data = request.data;

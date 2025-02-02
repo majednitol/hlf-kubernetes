@@ -16,7 +16,8 @@
 
 // install chaincode package [need to install for 3 org ]
 go to peer cli ;;;; cd opt/gopath/src/github.com/chaincode/basic/packaging
-peer lifecycle chaincode install basic-org3.tgz  [need to store package identifier for cc deoloy]
-
+peer lifecycle chaincode install basic-org1.tgz  [need to store package identifier for cc deoloy]
+peer lifecycle chaincode install basic-org2.tgz
+peer lifecycle chaincode install basic-org3.tgz
 
 

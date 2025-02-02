@@ -8,7 +8,7 @@ export async function uploadPrescription(request) {
         let data = request.data;
         const sUserId = request.sUserId
         console.log("data",data)
-        if (!sUserId || !data.rUserId || !data.urls) {
+        if (!sUserId || !data.rUserId || !data.urls || !data.disease) {
             throw new Error("Invalid data: Missing required properties (sUserId, rUserId, urlJson).");
         }
       
@@ -21,6 +21,7 @@ export async function uploadPrescription(request) {
         console.log(urlJsonString)
         let result = await contract.submitTransaction(
             "AddPrescription",
+            data.disease,
             sUserId,
             data.rUserId,
             urlJsonString

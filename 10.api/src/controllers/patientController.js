@@ -1,5 +1,5 @@
 import { shareOwnData } from "../services/dataService.js";
-import { getPatient, getPatientDataFromDoctor, setPatient, setPatientPersonalData } from "../services/patientService.js";
+import { AcceptByPatient, GetDiseaseNames, getPatient, getPatientDataFromDoctor, GetPendingRequestedUser, setPatient, setPatientPersonalData } from "../services/patientService.js";
 
 const chaincodeName = "basic";
 const channelName = "mychannel"
@@ -39,6 +39,40 @@ export async function patientData(req, res) {
     }
 }
 
+export async function getDisease(req, res) {
+    try {
+        let payload = {
+            "org": req.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "userId": req.query.userId ? req.query.userId : req.userId
+        }
+        console.log("payload", payload)
+        let result = await GetDiseaseNames(payload);
+        console.log("result app", result)
+        res.json(result)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
+export async function getPendingRequestedUser(req, res) {
+    try {
+        let payload = {
+            "org": req.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "userId": req.query.userId ? req.query.userId : req.userId
+        }
+        console.log("payload", payload)
+        let result = await GetPendingRequestedUser(payload);
+        console.log("result app", result)
+        res.json(result)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
 export async function AddPatientPersonalData(req, res) {
     try {
         let payload = {
@@ -88,6 +122,26 @@ export async function shareDataByPatient(req, res) {
         }
         console.log("payload", payload)
         let result = await shareOwnData(payload);
+        console.log(result)
+        res.send(result)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
+
+export async function acceptByPatient(req, res) {
+    try {
+        let payload = {
+            "org": req.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "requesterId": req.body.requesterId,
+            "userId":req.userId,
+            "disease":req.body.disease
+        }
+        console.log("payload", payload)
+        let result = await AcceptByPatient(payload);
         console.log(result)
         res.send(result)
     } catch (error) {

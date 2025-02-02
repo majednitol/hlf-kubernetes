@@ -1,15 +1,39 @@
 import { smartContract } from "./smartContract.js";
 export async function getPatient(request) {
-try {
-  const userId = request.userId
-  console.log("userId",userId)
-  const contract = await smartContract(request, userId)
-  let result = await contract.evaluateTransaction("GetPatient", userId);
-  console.log("result", result)
-  return JSON.parse(result);
-} catch (error) {
-  console.log(error)
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetPatient", userId);
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
 }
+export async function GetDiseaseNames(request) {
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetDiseaseNames");
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
+}
+export async function GetPendingRequestedUser(request) {
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetPendingRequestedUser");
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 export async function setPatient(request) {
@@ -35,7 +59,23 @@ export async function setPatient(request) {
     throw error;
   }
 }
+export async function AcceptByPatient(request) {
+  try {
+    const requesterId = request.requesterId;
+    const userId = request.userId
+    const disease = request.disease
+    const contract = await smartContract(request, userId)
+    let result = await contract.submitTransaction(
+      "AcceptByPatient", userId, requesterId, disease
+    );
+    console.log("Transaction Result:", result);
 
+    return result;
+  } catch (error) {
+    console.error("Error in AcceptByPatient:", error);
+    throw error;
+  }
+}
 export async function setPatientPersonalData(request) {
   try {
     let data = request.data;

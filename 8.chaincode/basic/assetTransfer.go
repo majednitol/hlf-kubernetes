@@ -63,11 +63,12 @@ func (s *SmartContract) GetAllAdmindata(ctx contractapi.TransactionContextInterf
 }
 
 type Admin struct {
-	AdminID               string   `json:"adminID"`
-	Name                  string   `json:"name"`
-	Gender                string   `json:"gender"`
-	ProfilePic            string   `json:"profilePic"`
-	AllPrescription       []string `json:"allPrescription"`
+	AdminID         string              `json:"adminID"`
+	Name            string              `json:"name"`
+	Gender          string              `json:"gender"`
+	ProfilePic      string              `json:"profilePic"`
+	AllPrescription map[string][]string `json:"allPrescription"`
+
 	IsAdded               bool     `json:"isAdded"`
 	UserType              string   `json:"userType"`
 	Birthday              string   `json:"birthday"`
@@ -85,8 +86,8 @@ func NewAdmin(adminID string, name string, gender string, birthday string, email
 		Name:                  name,
 		Gender:                gender,
 		Birthday:              birthday,
-		EmailAddress:          emailAddress, // Default profile picture
-		AllPrescription:       []string{},   // Default empty list for prescriptions
+		EmailAddress:          emailAddress,              // Default profile picture
+		AllPrescription:       make(map[string][]string), // Default empty list for prescriptions
 		IsAdded:               true,
 		UserType:              "admin",    // Default user type
 		Age:                   30,         // Default age
@@ -255,7 +256,7 @@ type Patient struct {
 	Location               string              `json:"location"`
 	IsAdded                bool                `json:"isAdded"`
 	UserType               string              `json:"userType"`
-	ImgUrl                 []string            `json:"imgUrl"`
+	Prescriptions          map[string][]string `json:"prescriptions"`
 	PatientPersonalData    PatientPersonalData `json:"patientPersonalData"`
 	ProfilePic             string              `json:"profilePic"`
 	Birthday               string              `json:"birthday"`
@@ -275,7 +276,7 @@ func NewPatient(patientID string, name string, gender string, age int, location 
 		Location:               location,
 		Birthday:               birthday,
 		EmailAddress:           emailAddress,
-		ImgUrl:                 []string{},
+		Prescriptions:          make(map[string][]string),
 		SharedAllDoctorAddress: []string{},
 		PersonalDoctor:         []string{},
 	}
@@ -425,9 +426,62 @@ func (s *SmartContract) GetAllUserTypeData(ctx contractapi.TransactionContextInt
 	}
 }
 
-// // problem with this function
+func (s *SmartContract) AddDisease(ctx contractapi.TransactionContextInterface, disease string) error {
+	diseaseDataJSON, err := ctx.GetStub().GetState("diseaseData")
+	if err != nil {
+		return fmt.Errorf("failed to retrieve disease data: %v", err)
+	}
 
-func (s *SmartContract) DeletePrescription(ctx contractapi.TransactionContextInterface, imgurl string, user1Id string, user2Id string) error {
+	var diseaseData map[string]bool
+	if diseaseDataJSON != nil {
+		err = json.Unmarshal(diseaseDataJSON, &diseaseData)
+		if err != nil {
+			return fmt.Errorf("failed to parse disease data: %v", err)
+		}
+	} else {
+		diseaseData = make(map[string]bool)
+	}
+
+	// Check if the disease already exists
+	if _, exists := diseaseData[disease]; exists {
+		return fmt.Errorf("disease already exists: %s", disease)
+	}
+
+	// Add new disease
+	diseaseData[disease] = true
+
+	// Store updated disease data
+	diseaseDataJSON, err = json.Marshal(diseaseData)
+	if err != nil {
+		return fmt.Errorf("failed to serialize disease data: %v", err)
+	}
+	return ctx.GetStub().PutState("diseaseData", diseaseDataJSON)
+}
+
+func (s *SmartContract) GetDiseaseNames(ctx contractapi.TransactionContextInterface) ([]string, error) {
+	diseaseDataJSON, err := ctx.GetStub().GetState("diseaseData")
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve disease data: %v", err)
+	}
+
+	if diseaseDataJSON == nil {
+		return []string{}, nil
+	}
+
+	var diseaseData map[string]bool
+	err = json.Unmarshal(diseaseDataJSON, &diseaseData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse disease data: %v", err)
+	}
+	diseaseList := make([]string, 0, len(diseaseData))
+	for disease := range diseaseData {
+		diseaseList = append(diseaseList, disease)
+	}
+
+	return diseaseList, nil
+}
+
+func (s *SmartContract) DeletePrescription(ctx contractapi.TransactionContextInterface, imgurl string, disease string, user1Id string, user2Id string) error {
 	accounts, err := s.GetAccounts(ctx)
 	if err != nil {
 		return err
@@ -446,12 +500,11 @@ func (s *SmartContract) DeletePrescription(ctx contractapi.TransactionContextInt
 				return fmt.Errorf("patient with ID %s not found", user1Id)
 			}
 
-			if imgurl == "" || !contains(patient.ImgUrl, imgurl) {
-				return fmt.Errorf("prescription not found for patient with ID %s", user1Id)
+			if imgurl == "" || patient.Prescriptions == nil || patient.Prescriptions[disease] == nil || !contains(patient.Prescriptions[disease], imgurl) {
+				return fmt.Errorf("prescription not found for patient with ID %s and disease %s", patient.PatientID, disease)
 			}
 
-			// Delete the prescription
-			patient.ImgUrl = removeElement(patient.ImgUrl, imgurl)
+			patient.Prescriptions[disease] = removeElement(patient.Prescriptions[disease], imgurl)
 
 			// Persist updated state to the ledger
 			patientJSON, err := json.Marshal(patient)
@@ -866,6 +919,15 @@ func (s *SmartContract) SetPatient(ctx contractapi.TransactionContextInterface, 
 	}
 
 	accounts[patientID] = string(TPatient)
+	allPatients, err := s.GetAllPatients(ctx)
+if err != nil {
+	return fmt.Errorf("failed to retrieve all patients: %v", err)
+}
+allPatients = append(allPatients, patientID)
+if err := s.putState(ctx, AllPatientsKey, allPatients); err != nil {
+	return fmt.Errorf("failed to store allPatients update: %v", err)
+}
+
 	adminData, err := s.GetAllAdmindata(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get admin data: %v", err)
@@ -926,7 +988,7 @@ func (s *SmartContract) SetPatientPersonalData(ctx contractapi.TransactionContex
 
 	return nil
 }
-func (sc *SmartContract) AddPrescription(ctx contractapi.TransactionContextInterface, sUserId string, rUserId string, url []string) error {
+func (sc *SmartContract) AddPrescription(ctx contractapi.TransactionContextInterface, disease string, sUserId string, rUserId string, url []string) error {
 	accounts, err := sc.GetAccounts(ctx)
 	if err != nil {
 		return err
@@ -1098,7 +1160,10 @@ func (sc *SmartContract) AddPrescription(ctx contractapi.TransactionContextInter
 			if err != nil || !patient.IsAdded {
 				return fmt.Errorf("patient with ID=%s not found or not added: %v", sUserId, err)
 			}
-			patient.ImgUrl = append(patient.ImgUrl, url...)
+			if patient.Prescriptions == nil {
+				patient.Prescriptions = make(map[string][]string)
+			}
+			patient.Prescriptions[disease] = append(patient.Prescriptions[disease], url...)
 
 			// Serialize and put state for patient
 			patientData, err := json.Marshal(patient)
@@ -1208,7 +1273,17 @@ func (s *SmartContract) ShareData(
 				return fmt.Errorf("data already shared with admin ID=%s", rUserId)
 			} else {
 				admin.PatientToAdmin = append(admin.PatientToAdmin, sUserId)
-				admin.AllPrescription = append(admin.AllPrescription, patient.ImgUrl...)
+				if admin.AllPrescription == nil {
+					admin.AllPrescription = make(map[string][]string)
+				}
+
+				for disease, prescriptions := range patient.Prescriptions {
+					if _, exists := admin.AllPrescription[disease]; !exists {
+						admin.AllPrescription[disease] = []string{}
+					}
+					admin.AllPrescription[disease] = append(admin.AllPrescription[disease], prescriptions...)
+				}
+
 			}
 
 			// Save updated admin back to the ledger
@@ -1230,6 +1305,10 @@ func (s *SmartContract) ShareData(
 			if contains(pendingTx[ownerId], rUserId) {
 				return fmt.Errorf("transaction already in pending for receiver ID=%s", rUserId)
 			}
+			if _, exists := pendingTx[ownerId]; !exists {
+				pendingTx[ownerId] = make([]string, 0) // Initialize empty slice
+			}
+			pendingTx[ownerId] = append(pendingTx[ownerId], rUserId)
 			medicalResearchLab, err := s.GetMedicalResearchLab(ctx, rUserId)
 			if err != nil || !medicalResearchLab.IsAdded {
 				return fmt.Errorf("medical research lab with ID=%s not found or not added: %v", rUserId, err)
@@ -1255,16 +1334,7 @@ func (s *SmartContract) ShareData(
 
 			// Update the transactions map with the new transaction
 			transactions[rUserId] = transaction
-			// pendingTx, err := s.GetPendingTx(ctx)
-			// if err != nil {
-			// 	return fmt.Errorf("failed to retrieve pending transactions: %v", err)
-			// }
 
-			// Append the rUserId to the list of pending transactions for the ownerId
-			pendingTx[ownerId] = append(pendingTx[ownerId], rUserId)
-
-			// Save transaction to the ledger
-			// transactionKey := "transaction"
 			if err := s.putState(ctx, TransactionsKey, transactions); err != nil {
 				return fmt.Errorf("failed to store transaction data: %v", err)
 			}
@@ -1526,6 +1596,7 @@ type MedicalResearchLab struct {
 	ImgUrl          []string `json:"imgUrl"` // MedicalResearchLabReports
 	UserType        string   `json:"userType"`
 	ProfilePic      string   `json:"profilePic"`
+	Prescriptions          map[string][]string `json:"prescriptions"`
 	EmailAddress    string   `json:"emailAddress"`
 	AdminToMedRcLab []string `json:"adminToMedRcLab"` // vvv
 
@@ -1613,6 +1684,7 @@ type PharmacyCompany struct {
 	TopMedichine       []string `json:"topMedichine"`
 	ProfilePic         string   `json:"profilePic"`
 	EmailAddress       string   `json:"emailAddress"`
+	Prescriptions          map[string][]string `json:"prescriptions"`
 	AdminToPharmacy    []string `json:"adminToPharmacy"` // zzz
 
 }
@@ -1766,7 +1838,10 @@ const (
 	TransactionsKey = "transactions"
 	PendingTxKey    = "pendingTx"
 	AllAdminsKey    = "allAdmins"
+	AllPatientsKey    = "allPatients"
 	IsConfirmedKey  = "isConfirmed"
+	PendingRequestedUserKey = "pendingRequestedUser"
+	PendingRequesterUserKey ="pendingRequesterUser"
 )
 
 func (s *SmartContract) GetPendingTx(ctx contractapi.TransactionContextInterface) (map[string][]string, error) {
@@ -1790,6 +1865,51 @@ func (s *SmartContract) GetPendingTx(ctx contractapi.TransactionContextInterface
 
 	return pendingTx, nil
 }
+
+func (s *SmartContract) GetPendingRequestedUser(ctx contractapi.TransactionContextInterface) (map[string]map[string][]string, error) {
+	// Retrieve the pending transactions from the ledger
+	pendingRequestedUserJSON, err := ctx.GetStub().GetState(PendingRequestedUserKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve pending requested users from the ledger: %v", err)
+	}
+
+	// If no data exists, return an empty map
+	if pendingRequestedUserJSON == nil {
+		return make(map[string]map[string][]string), nil
+	}
+
+	// Deserialize the JSON into a nested map
+	var pendingRequestedUser map[string]map[string][]string
+	err = json.Unmarshal(pendingRequestedUserJSON, &pendingRequestedUser)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize pending requested users: %v", err)
+	}
+
+	return pendingRequestedUser, nil
+}
+
+func (s *SmartContract) GetPendingRequesterUser(ctx contractapi.TransactionContextInterface) (map[string]map[string][]string, error) {
+	// Retrieve the pending transactions from the ledger
+	pendingRequesterUserJSON, err := ctx.GetStub().GetState(PendingRequesterUserKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve pending requester users from the ledger: %v", err)
+	}
+
+	// If no data exists, return an empty map
+	if pendingRequesterUserJSON == nil {
+		return make(map[string]map[string][]string), nil
+	}
+
+	// Deserialize the JSON into a nested map
+	var pendingRequesterUser map[string]map[string][]string
+	err = json.Unmarshal(pendingRequesterUserJSON, &pendingRequesterUser)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize pending requester users: %v", err)
+	}
+
+	return pendingRequesterUser, nil
+}
+
 
 func (s *SmartContract) GetTransactions(ctx contractapi.TransactionContextInterface) (map[string]Transaction, error) {
 	// Retrieve the "transactions" state from the ledger
@@ -1834,6 +1954,29 @@ func (s *SmartContract) GetAllAdmins(ctx contractapi.TransactionContextInterface
 
 	return allAdmins, nil
 }
+
+func (s *SmartContract) GetAllPatients(ctx contractapi.TransactionContextInterface) ([]string, error) {
+	// Retrieve the "allPatients" state from the ledger
+	allPatientsJSON, err := ctx.GetStub().GetState(AllPatientsKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve allPatients from the ledger: %v", err)
+	}
+
+	// Check if "allPatients" exists in the ledger
+	if allPatientsJSON == nil {
+		return []string{}, nil
+	}
+
+	// Deserialize the JSON into a slice of strings
+	var allPatients []string
+	err = json.Unmarshal(allPatientsJSON, &allPatients)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize allPatients: %v", err)
+	}
+
+	return allPatients, nil
+}
+
 func (s *SmartContract) GetIsConfirmed(ctx contractapi.TransactionContextInterface) (map[string]map[string]bool, error) {
 	// Retrieve the "isConfirmed" state from the ledger
 	isConfirmedJSON, err := ctx.GetStub().GetState(IsConfirmedKey)
@@ -1872,6 +2015,7 @@ const (
 	TPathologist        EntityType = "Pathologist"
 	TMedicalResearchLab EntityType = "MedicalResearchLab"
 	TPharmacyCompany    EntityType = "PharmacyCompany"
+	
 	TPatient            EntityType = "Patient"
 	TAdmin              EntityType = "Admin"
 )
@@ -2029,6 +2173,258 @@ func (s *SmartContract) GiveConfirmation(ctx contractapi.TransactionContextInter
 
 	return nil
 }
+
+func (s *SmartContract) AcceptByPatient(ctx contractapi.TransactionContextInterface, userId string, requesterId string, disease string) error {
+	// Retrieve pending requests
+	pendingRequestedUsers, err := s.GetPendingRequestedUser(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve pending requested users: %v", err)
+	}
+
+	pendingRequesterUsers, err := s.GetPendingRequesterUser(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve pending requester users: %v", err)
+	}
+
+	// Check if the patient has pending requests for the specified disease
+	requesters, exists := pendingRequestedUsers[userId][disease]
+	if !exists || len(requesters) == 0 {
+		return fmt.Errorf("no pending requests found for patient ID=%s and disease=%s", userId, disease)
+	}
+
+	// Check if the requester is valid
+	if !contains(requesters, requesterId) {
+		return fmt.Errorf("requester ID=%s has not requested disease=%s from patient ID=%s", requesterId, disease, userId)
+	}
+
+	// Retrieve patient data
+	patient, err := s.GetPatient(ctx, userId)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve patient data: %v", err)
+	}
+
+	// Get prescriptions for the requested disease
+	prescriptions, hasPrescriptions := patient.Prescriptions[disease]
+	if !hasPrescriptions || len(prescriptions) == 0 {
+		return fmt.Errorf("patient ID=%s has no prescriptions for disease=%s", userId, disease)
+	}
+
+	// Retrieve accounts
+	accounts, err := s.GetAccounts(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve accounts: %v", err)
+	}
+
+	// Validate the requester type and update their prescriptions
+	userRole, exists := accounts[requesterId]
+	if !exists {
+		return fmt.Errorf("invalid requester ID=%s", requesterId)
+	}
+
+	switch userRole {
+	case string(TPharmacyCompany):
+		pharmacy, err := s.GetPharmacyCompany(ctx, requesterId)
+		if err != nil {
+			return fmt.Errorf("failed to retrieve pharmacy data: %v", err)
+		}
+
+		// Initialize the Prescriptions map if nil
+		if pharmacy.Prescriptions == nil {
+			pharmacy.Prescriptions = make(map[string][]string)
+		}
+
+		// Append prescriptions
+		pharmacy.Prescriptions[disease] = append(pharmacy.Prescriptions[disease], prescriptions...)
+
+		// Save updated PharmacyCompany data
+		if err := s.putState(ctx, requesterId, pharmacy); err != nil {
+			return fmt.Errorf("failed to update pharmacy data: %v", err)
+		}
+
+	case string(TMedicalResearchLab):
+		lab, err := s.GetMedicalResearchLab(ctx, requesterId)
+		if err != nil {
+			return fmt.Errorf("failed to retrieve research lab data: %v", err)
+		}
+
+		// Initialize the Prescriptions map if nil
+		if lab.Prescriptions == nil {
+			lab.Prescriptions = make(map[string][]string)
+		}
+
+		// Append prescriptions
+		lab.Prescriptions[disease] = append(lab.Prescriptions[disease], prescriptions...)
+
+		// Save updated MedicalResearchLab data
+		if err := s.putState(ctx, requesterId, lab); err != nil {
+			return fmt.Errorf("failed to update research lab data: %v", err)
+		}
+
+	default:
+		return fmt.Errorf("requester ID=%s is not a valid PharmacyCompany or MedicalResearchLab", requesterId)
+	}
+
+	// Remove the requester from pendingRequestedUsers
+	pendingRequestedUsers[userId][disease] = removeUserFromList(requesters, requesterId)
+
+	// If no more requesters left for this disease, remove the disease entry
+	if len(pendingRequestedUsers[userId][disease]) == 0 {
+		delete(pendingRequestedUsers[userId], disease)
+	}
+
+	// If no more diseases are left under the patient, remove the patient entry
+	if len(pendingRequestedUsers[userId]) == 0 {
+		delete(pendingRequestedUsers, userId)
+	}
+
+	// Remove patient from pendingRequesterUsers
+	pendingRequesterUsers[requesterId][disease] = removeUserFromList(pendingRequesterUsers[requesterId][disease], userId)
+
+	// If no more patients left under this disease, remove the disease entry
+	if len(pendingRequesterUsers[requesterId][disease]) == 0 {
+		delete(pendingRequesterUsers[requesterId], disease)
+	}
+
+	// If no more diseases are left for the requester, remove the requester entry
+	if len(pendingRequesterUsers[requesterId]) == 0 {
+		delete(pendingRequesterUsers, requesterId)
+	}
+
+	// Store updated states
+	if err := s.putState(ctx, PendingRequestedUserKey, pendingRequestedUsers); err != nil {
+		return fmt.Errorf("failed to update pending requested users: %v", err)
+	}
+
+	if err := s.putState(ctx, PendingRequesterUserKey, pendingRequesterUsers); err != nil {
+		return fmt.Errorf("failed to update pending requester users: %v", err)
+	}
+
+	return nil
+}
+
+
+
+// Helper function to remove a user from a list
+func removeUserFromList(users []string, userId string) []string {
+	newUsers := []string{}
+	for _, u := range users {
+		if u != userId {
+			newUsers = append(newUsers, u)
+		}
+	}
+	return newUsers
+}
+
+
+func (s *SmartContract) RequestPatientData(ctx contractapi.TransactionContextInterface, userId string, disease string) error {
+	// Retrieve all user accounts
+	accounts, err := s.GetAccounts(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve accounts: %v", err)
+	}
+
+	// Validate user role
+	userRole, exists := accounts[userId]
+	if !exists || (userRole != string(TMedicalResearchLab) && userRole != string(TPharmacyCompany)) {
+		return fmt.Errorf("user ID=%s is not authorized (must be a PharmacyCompany or MedicalResearchLab)", userId)
+	}
+
+	// Retrieve all patients
+	patients, err := s.GetAllPatients(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve all patients: %v", err)
+	}
+
+	// Filter patients based on the requested disease
+	var patientIDs []string
+	for _, patientID := range patients {
+		patient, err := s.GetPatient(ctx, patientID)
+		if err != nil {
+			continue 
+		}
+
+		if _, exists := patient.Prescriptions[disease]; exists {
+			patientIDs = append(patientIDs, patient.PatientID) 
+		}
+	}
+
+	if len(patientIDs) == 0 {
+		return fmt.Errorf("no patients found with prescriptions for disease: %s", disease)
+	}
+
+	// Validate user role
+	switch userRole {
+	case string(TMedicalResearchLab):
+		lab, err := s.GetMedicalResearchLab(ctx, userId)
+		if err != nil || !lab.IsAdded {
+			return fmt.Errorf("MedicalResearchLab with ID=%s not found or not added", userId)
+		}
+
+	case string(TPharmacyCompany):
+		pharmacy, err := s.GetPharmacyCompany(ctx, userId)
+		if err != nil || !pharmacy.IsAdded {
+			return fmt.Errorf("PharmacyCompany with ID=%s not found or not added", userId)
+		}
+
+	default:
+		return fmt.Errorf("only MedicalResearchLab or PharmacyCompany can execute this transaction")
+	}
+
+	// Retrieve existing pending requests
+	pendingRequestedUsers, err := s.GetPendingRequestedUser(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve pending requested users: %v", err)
+	}
+
+	pendingRequesterUsers, err := s.GetPendingRequesterUser(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve pending requester users: %v", err)
+	}
+
+	// Ensure user entry exists in pendingRequesterUsers
+	if _, exists := pendingRequesterUsers[userId]; !exists {
+		pendingRequesterUsers[userId] = make(map[string][]string)
+	}
+
+	// Add only new patient IDs that are not already pending
+	var newPatientIDs []string
+	if existingPatients, exists := pendingRequesterUsers[userId][disease]; exists {
+		for _, patientID := range patientIDs {
+			if !contains(existingPatients, patientID) {
+				newPatientIDs = append(newPatientIDs, patientID)
+			}
+		}
+	} else {
+		newPatientIDs = append(newPatientIDs, patientIDs...)
+	}
+
+	if len(newPatientIDs) == 0 {
+		return fmt.Errorf("all selected patients for disease %s are already pending for user ID=%s", disease, userId)
+	}
+
+	// Update pendingRequesterUsers
+	pendingRequesterUsers[userId][disease] = append(pendingRequesterUsers[userId][disease], newPatientIDs...)
+
+	// Update pendingRequestedUsers
+	for _, patientID := range newPatientIDs {
+		if _, exists := pendingRequestedUsers[patientID]; !exists {
+			pendingRequestedUsers[patientID] = make(map[string][]string)
+		}
+		pendingRequestedUsers[patientID][disease] = append(pendingRequestedUsers[patientID][disease], userId)
+	}
+
+	// Store the updated pending requests
+	if err := s.putState(ctx, PendingRequestedUserKey, pendingRequestedUsers); err != nil {
+		return fmt.Errorf("failed to store pending requested users: %v", err)
+	}
+
+	if err := s.putState(ctx, PendingRequesterUserKey, pendingRequesterUsers); err != nil {
+		return fmt.Errorf("failed to store pending requester users: %v", err)
+	}
+
+	return nil
+}
+
 func main() {
 
 	config := serverConfig{

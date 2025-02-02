@@ -12,6 +12,38 @@ export async function getAdmin(request) {
   }
 }
 
+export async function GetDiseaseNames(request) {
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetDiseaseNames");
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function AddDisease(request) {
+  try {
+    const disease = request.disease;
+    const userId = request.userId
+    const contract = await smartContract(request, userId)
+    let result = await contract.submitTransaction(
+      "AddDisease",
+      disease
+      
+    );
+    console.log("Transaction Result:", result);
+
+    return result;
+  } catch (error) {
+    console.error("Error in createAsset:", error);
+    throw error;
+  }
+}
+
 export async function setAdmin(request) {
   try {
     let data = request.data;
