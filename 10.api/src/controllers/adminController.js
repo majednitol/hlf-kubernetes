@@ -1,4 +1,4 @@
-import { allAdminData, getAdmin, giveConfirmation, setAdmin } from "../services/adminService.js";
+import { allAdmin, allAdminData, getAdmin, giveConfirmation, setAdmin } from "../services/adminService.js";
 import { shareOwnData } from "../services/dataService.js";
 
 const chaincodeName = "basic";
@@ -57,7 +57,24 @@ export async function getAllAdmindata(req, res) {
         res.status(500).send(error)
     }
 }
-
+export async function getAllAdmin(req, res) {
+    try {
+        
+        let payload = {
+            "org": req.body.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "userId": req.body.userId
+        }
+        console.log("payload", payload)
+        let result = await allAdmin(payload);
+        console.log("result app", result)
+        res.json(result)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
 export async function confirmation(req, res) {
     try {
         let payload = {

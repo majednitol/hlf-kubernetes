@@ -18,12 +18,12 @@ spec:
         app: chaincode-basic-org1
     spec:
       containers:
-        - image: majedur708/hlf-api:12.2
+        - image: majedur708/hlf-api:12.4
           imagePullPolicy: Always
           name: chaincode-basic-org1
           env:
             - name: CHAINCODE_ID
-              value: "basic:eea7aa29e0b878c5246ef6622ec512365fc1b8f5ffc9e339ebd4e682d50306f3"
+              value: "basic:74c8d4bd2ae76e91d7160817ba7ae55323303c8cd95380f048e8fc96a45552d7"
             - name: CHAINCODE_SERVER_ADDRESS
               value: "0.0.0.0:7052"
           ports:

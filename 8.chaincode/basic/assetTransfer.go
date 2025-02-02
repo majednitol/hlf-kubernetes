@@ -1,4 +1,3 @@
-
 /*
 SPDX-License-Identifier: Apache-2.0
 */
@@ -1266,7 +1265,7 @@ func (s *SmartContract) ShareData(
 
 			// Save transaction to the ledger
 			// transactionKey := "transaction"
-			if err := s.putState(ctx, TransactionsKey , transactions); err != nil {
+			if err := s.putState(ctx, TransactionsKey, transactions); err != nil {
 				return fmt.Errorf("failed to store transaction data: %v", err)
 			}
 			// pendingTxKey := "PendingTx"
@@ -1897,9 +1896,9 @@ func (s *SmartContract) GiveConfirmation(ctx contractapi.TransactionContextInter
 	if err != nil {
 		return fmt.Errorf("failed to retrieve isConfirmed: %v", err)
 	}
-	// if _, exists := isConfirmed[adminUserId]; !exists {
-	// 	isConfirmed[adminUserId] = make(map[string]bool)
-	// }
+	if _, exists := isConfirmed[adminUserId]; !exists {
+		isConfirmed[adminUserId] = make(map[string]bool)
+	}
 	if isConfirmed[adminUserId][userId] {
 		return fmt.Errorf("user ID=%d has already confirmed transaction for admin ID=%d", userId, adminUserId)
 	}
@@ -2019,7 +2018,7 @@ func (s *SmartContract) GiveConfirmation(ctx contractapi.TransactionContextInter
 		tx.Confirmations++
 		isConfirmed[adminUserId][userId] = true
 		transactions[userId] = tx
-		if err := s.putState(ctx, IsConfirmedKey  , isConfirmed); err != nil {
+		if err := s.putState(ctx, IsConfirmedKey, isConfirmed); err != nil {
 			return fmt.Errorf("failed to store  pendingTx: %v", err)
 		}
 		if err := s.putState(ctx, TransactionsKey, transactions); err != nil {

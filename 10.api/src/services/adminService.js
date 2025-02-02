@@ -46,7 +46,18 @@ export async function allAdminData(request) {
     console.log(error)
   }
 }
-
+export async function allAdmin(request) {
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetAllAdmins");
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
+}
 export async function giveConfirmation(request) {
   try {
     
