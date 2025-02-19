@@ -110,6 +110,24 @@ export async function patientDataFromDoctor(req, res) {
         res.send(error)
     }
 }
+export async function patientDataFromPathologist(req, res) {
+    try {
+        let payload = {
+            "org": req.query.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "patientId": req.userId,
+            "pathologistId": req.query.pathologistId
+        }
+        console.log("payload", payload)
+        let result = await getPatientDataFromDoctor(payload);
+        console.log("result app", result)
+        res.json(result)
+    } catch (error) {
+        console.log(error)
+        res.send(error)
+    }
+}
 
 export async function shareDataByPatient(req, res) {
     try {

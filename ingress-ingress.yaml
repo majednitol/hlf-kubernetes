@@ -2,29 +2,18 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"cert-manager.io/cluster-issuer":"letsencrypt-prod","kubernetes.io/ingress.class":"nginx"},"name":"ingress","namespace":"default"},"spec":{"rules":[{"host":"hlf-k8.tk","http":{"paths":[{"backend":{"service":{"name":"frontend","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}},{"host":"api.hlf-k8.tk","http":{"paths":[{"backend":{"service":{"name":"api","port":{"number":4000}}},"path":"/","pathType":"Prefix"}]}},{"host":"explorer.hlf-k8.tk","http":{"paths":[{"backend":{"service":{"name":"explorer","port":{"number":8080}}},"path":"/","pathType":"Prefix"}]}},{"host":"grafana.hlf-k8.tk","http":{"paths":[{"backend":{"service":{"name":"grafana","port":{"number":3000}}},"path":"/","pathType":"Prefix"}]}}],"tls":[{"hosts":["hlf-k8.tk","api.hlf-k8.tk","explorer.hlf-k8.tk","grafana.hlf-k8.tk"],"secretName":"tls-cert"}]}}
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"kubernetes.io/ingress.class":"nginx"},"name":"ingress","namespace":"default"},"spec":{"rules":[{"host":"www.cooo3.com","http":{"paths":[{"backend":{"service":{"name":"api","port":{"number":4000}}},"path":"/","pathType":"Prefix"},{"backend":{"service":{"name":"frontend","port":{"number":80}}},"path":"/api","pathType":"Prefix"},{"backend":{"service":{"name":"frontend","port":{"number":8080}}},"path":"/explorer","pathType":"Prefix"},{"backend":{"service":{"name":"grafana","port":{"number":3000}}},"path":"/grafana","pathType":"Prefix"}]}}]}}
     kubernetes.io/ingress.class: nginx
-  creationTimestamp: "2025-01-15T19:13:15Z"
-  generation: 1
+  creationTimestamp: "2025-02-02T13:51:10Z"
+  generation: 2
   name: ingress
   namespace: default
-  resourceVersion: "521430"
-  uid: d0df8b93-dedf-4652-89aa-9db0fd056604
+  resourceVersion: "90958"
+  uid: c6a15812-5b8c-4207-8f27-0bf54650cf9f
 spec:
   rules:
-  - host: hlf-k8.tk
-    http:
-      paths:
-      - backend:
-          service:
-            name: frontend
-            port:
-              number: 80
-        path: /
-        pathType: Prefix
-  - host: api.hlf-k8.tk
+  - host: www.cooo37.com
     http:
       paths:
       - backend:
@@ -34,35 +23,26 @@ spec:
               number: 4000
         path: /
         pathType: Prefix
-  - host: explorer.hlf-k8.tk
-    http:
-      paths:
       - backend:
           service:
-            name: explorer
+            name: frontend
+            port:
+              number: 80
+        path: /api
+        pathType: Prefix
+      - backend:
+          service:
+            name: frontend
             port:
               number: 8080
-        path: /
+        path: /explorer
         pathType: Prefix
-  - host: grafana.hlf-k8.tk
-    http:
-      paths:
       - backend:
           service:
             name: grafana
             port:
               number: 3000
-        path: /
+        path: /grafana
         pathType: Prefix
-  tls:
-  - hosts:
-    - hlf-k8.tk
-    - api.hlf-k8.tk
-    - explorer.hlf-k8.tk
-    - grafana.hlf-k8.tk
-    secretName: tls-cert
 status:
-  loadBalancer:
-    ingress:
-    - ip: 139.59.48.178
- 9i 89i89i888
+  loadBalancer: {}

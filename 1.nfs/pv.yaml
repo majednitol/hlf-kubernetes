@@ -5,11 +5,11 @@ metadata:
 spec:
   storageClassName: standard
   capacity:
-    storage: 5Gi
+    storage: 20Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
   nfs:
     path: /mnt/nfs_share/
-    server: 13.203.120.20
+    server: 128.199.31.157
    

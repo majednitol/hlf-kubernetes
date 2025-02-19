@@ -18,7 +18,7 @@ spec:
             claimName: mypvc
       containers:
         - name: ca-org1
-          image: hyperledger/fabric-ca:1.4.9
+          image: hyperledger/fabric-ca:1.5.13
           imagePullPolicy: "Always"
           command:
             [
@@ -27,11 +27,11 @@ spec:
             ]
           resources:
             requests:
-              memory: "300Mi"
-              cpu: "250m"
+              memory: "512Mi"
+              cpu: "500m"
             limits:
-              memory: "400Mi"
-              cpu: "350m"
+              memory: "1Gi"
+              cpu: "1"
           env:
            - name: FABRIC_CA_SERVER_CA_NAME
              value: ca-org1

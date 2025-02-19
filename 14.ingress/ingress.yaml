@@ -9,7 +9,7 @@ metadata:
 spec:
   rules:
     # Rule for direct access using the ELB hostname
-    - host: a6f591e5e75c44e42a42c7177bf22d04-af34c4d3d6943f48.elb.us-east-1.amazonaws.com
+    - host: www.patient-bio.majedurnitol.site
       http:
         paths:
           - path: /
@@ -23,14 +23,14 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: explorer
                 port:
                   number: 80
           - path: /explorer
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: explorer
                 port:
                   number: 8080
           - path: /grafana

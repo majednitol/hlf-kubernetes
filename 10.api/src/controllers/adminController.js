@@ -1,4 +1,4 @@
-import { AddDisease, allAdmin, allAdminData, getAdmin, GetDiseaseNames, giveConfirmation, setAdmin } from "../services/adminService.js";
+import { AddDisease, allAdmin, allAdminData, getAdmin, GetDiseaseNames, GetIsConfirmed, getPendingUser, giveConfirmation, setAdmin } from "../services/adminService.js";
 import { shareOwnData } from "../services/dataService.js";
 
 const chaincodeName = "basic";
@@ -48,6 +48,40 @@ export async function adminData(req, res) {
         }
         console.log("payload", payload)
         let result = await getAdmin(payload);
+        console.log("result app", result)
+        res.json(result)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
+export async function pendingUser(req, res) {
+    try {
+        let payload = {
+            "org": req.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "userId": req.userId
+        }
+        console.log("payload", payload)
+        let result = await getPendingUser(payload);
+        console.log("result app", result)
+        res.json(result)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
+export async function isConfirmed(req, res) {
+    try {
+        let payload = {
+            "org": req.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "userId": req.userId
+        }
+        console.log("payload", payload)
+        let result = await GetIsConfirmed(payload);
         console.log("result app", result)
         res.json(result)
     } catch (error) {

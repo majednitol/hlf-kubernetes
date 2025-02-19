@@ -115,3 +115,16 @@ export async function getPatientDataFromDoctor(request) {
     console.log(error)
   }
 }
+export async function getPatientDataFromPathologist(request) {
+  try {
+    const patientID = request.patientId
+    const pathologistId = request.pathologistId
+    console.log("userId", patientID, pathologistId)
+    const contract = await smartContract(request, patientID)
+    let result = await contract.evaluateTransaction("GetPatientDataFromPathologist", pathologistId, patientID);
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
+}

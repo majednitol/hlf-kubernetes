@@ -12,6 +12,31 @@ export async function getAdmin(request) {
   }
 }
 
+export async function getPendingUser(request) {
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetPendingTx");
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
+}
+export async function GetIsConfirmed(request) {
+  try {
+    const userId = request.userId
+    console.log("userId", userId)
+    const contract = await smartContract(request, userId)
+    let result = await contract.evaluateTransaction("GetIsConfirmed");
+    console.log("result", result)
+    return JSON.parse(result);
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export async function GetDiseaseNames(request) {
   try {
     const userId = request.userId

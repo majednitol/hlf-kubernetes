@@ -7,16 +7,16 @@ export async function uploadPrescription(request) {
         }
         let data = request.data;
         const sUserId = request.sUserId
-        console.log("data",data)
+        console.log("data", data)
         if (!sUserId || !data.rUserId || !data.urls || !data.disease) {
             throw new Error("Invalid data: Missing required properties (sUserId, rUserId, urlJson).");
         }
-      
+
         const userId = sUserId
         const contract = await smartContract(request, userId)
 
         const urlJsonString = Array.isArray(data.urls)
-        ? JSON.stringify(data.urls)
+            ? JSON.stringify(data.urls)
             : data.urls.toString();
         console.log(urlJsonString)
         let result = await contract.submitTransaction(
@@ -43,6 +43,7 @@ export async function deletePrescript(request) {
         let result = await contract.submitTransaction(
             "DeletePrescription",
             data.imgurl,
+            data.disease,
             userId,
             data.user2Id
 
