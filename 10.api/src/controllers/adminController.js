@@ -44,7 +44,7 @@ export async function adminData(req, res) {
             "org": req.org,
             "channelName": channelName,
             "chaincodeName": chaincodeName,
-            "userId": req.userId
+            "userId": req.query.userId ? req.query.userId : req.userId
         }
         console.log("payload", payload)
         let result = await getAdmin(payload);

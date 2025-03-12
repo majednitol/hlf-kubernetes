@@ -1,6 +1,6 @@
 
 import express from 'express' 
-import { acceptByPatient, AddPatientPersonalData, createPatientAccount, getDisease, getPendingRequestedUser, patientData, patientDataFromDoctor, patientDataFromPathologist, shareDataByPatient } from '../controllers/patientController.js';
+import { acceptByPatient, AddPatientPersonalData, createPatientAccount, getDisease, getPendingRequestedUser, patientData, patientDataFromDoctor, patientDataFromPathologist, revokeAccessDataByPatient, shareDataByPatient } from '../controllers/patientController.js';
 import authenticate from '../middleware/authenticate.js';
 const patientRouter = express.Router()
 patientRouter.post("/create-patient-account", createPatientAccount)
@@ -11,5 +11,8 @@ patientRouter.post('/add-patient-personal-data', authenticate,AddPatientPersonal
 patientRouter.get("/data-from-doctor", authenticate, patientDataFromDoctor)
 patientRouter.get("/data-from-pathologist", authenticate, patientDataFromPathologist)
 patientRouter.post("/share-data-by-patient", authenticate, shareDataByPatient)
-patientRouter.post("/accept-by-patient",authenticate,acceptByPatient)
+patientRouter.post("/accept-by-patient", authenticate, acceptByPatient)
+revokeAccessDataByPatient
+patientRouter.post("/revoke-access-data",authenticate, revokeAccessDataByPatient)
+
 export default patientRouter

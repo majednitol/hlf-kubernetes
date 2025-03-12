@@ -3,17 +3,17 @@ kind: Ingress
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"kubernetes.io/ingress.class":"nginx"},"name":"ingress","namespace":"default"},"spec":{"rules":[{"host":"www.cooo3.com","http":{"paths":[{"backend":{"service":{"name":"api","port":{"number":4000}}},"path":"/","pathType":"Prefix"},{"backend":{"service":{"name":"frontend","port":{"number":80}}},"path":"/api","pathType":"Prefix"},{"backend":{"service":{"name":"frontend","port":{"number":8080}}},"path":"/explorer","pathType":"Prefix"},{"backend":{"service":{"name":"grafana","port":{"number":3000}}},"path":"/grafana","pathType":"Prefix"}]}}]}}
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"kubernetes.io/ingress.class":"nginx"},"name":"ingress","namespace":"default"},"spec":{"rules":[{"host":"www.patient-bio.majedurnitol.site","http":{"paths":[{"backend":{"service":{"name":"api","port":{"number":4000}}},"path":"/","pathType":"Prefix"}]}}]}}
     kubernetes.io/ingress.class: nginx
-  creationTimestamp: "2025-02-02T13:51:10Z"
-  generation: 2
+  creationTimestamp: "2025-02-20T18:17:10Z"
+  generation: 5
   name: ingress
   namespace: default
-  resourceVersion: "90958"
-  uid: c6a15812-5b8c-4207-8f27-0bf54650cf9f
+  resourceVersion: "8091"
+  uid: d32ebfbe-8469-4f83-bb73-fd3f1341d5a8
 spec:
   rules:
-  - host: www.cooo37.com
+  - host: www.patient-bio.majedurnitol.site
     http:
       paths:
       - backend:
@@ -23,26 +23,7 @@ spec:
               number: 4000
         path: /
         pathType: Prefix
-      - backend:
-          service:
-            name: frontend
-            port:
-              number: 80
-        path: /api
-        pathType: Prefix
-      - backend:
-          service:
-            name: frontend
-            port:
-              number: 8080
-        path: /explorer
-        pathType: Prefix
-      - backend:
-          service:
-            name: grafana
-            port:
-              number: 3000
-        path: /grafana
-        pathType: Prefix
 status:
-  loadBalancer: {}
+  loadBalancer:
+    ingress:
+    - ip: 209.38.124.166

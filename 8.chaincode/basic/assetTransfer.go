@@ -128,62 +128,11 @@ func (s *SmartContract) SetAdmin(ctx contractapi.TransactionContextInterface, ad
 
 }
 
-// func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-//     patients := []Patient{
-//         {
-//             PatientID:           "patient1",
-//             Name:                "John Doe",
-//             Gender:              "Male",
-//             Age:                 30,
-//             Location:            "New York",
-//             IsAdded:             true,
-//             UserType:            "Regular",
-//             ImgUrl:              []string{"https://example.com/image1.jpg", "https://example.com/image2.jpg"},
-//             PatientPersonalData: PatientPersonalData{ /* Add appropriate fields */ },
-//             ProfilePic:          "https://example.com/profile1.jpg",
-//             Birthday:            "1993-01-15",
-//             EmailAddress:        "john.doe@example.com",
-//             SharedAllDoctorAddress: []string{"doctor1@example.com", "doctor2@example.com"},
-//             PersonalDoctor:      []string{"doctor3@example.com"},
-//         },
-//         {
-//             PatientID:           "patient2",
-//             Name:                "Jane Smith",
-//             Gender:              "Female",
-//             Age:                 28,
-//             Location:            "Los Angeles",
-//             IsAdded:             true,
-//             UserType:            "VIP",
-//             ImgUrl:              []string{"https://example.com/image3.jpg"},
-//             PatientPersonalData: PatientPersonalData{ /* Add appropriate fields */ },
-//             ProfilePic:          "https://example.com/profile2.jpg",
-//             Birthday:            "1995-03-20",
-//             EmailAddress:        "jane.smith@example.com",
-//             SharedAllDoctorAddress: []string{"doctor4@example.com"},
-//             PersonalDoctor:      []string{"doctor5@example.com", "doctor6@example.com"},
-//         },
-//         // Add more patient records as needed
-//     }
 
-//     for _, patient := range patients {
-//         patientJSON, err := json.Marshal(patient)
-//         if err != nil {
-//             return fmt.Errorf("failed to marshal patient: %v", err)
-//         }
-
-//         err = ctx.GetStub().PutState(patient.PatientID, patientJSON)
-//         if err != nil {
-//             return fmt.Errorf("failed to put patient into world state: %v", err)
-//         }
-//     }
-
-//     return nil
-// }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	accounts := make(map[string]string)
 
-	accounts["user1"] = string(TAdmin)
 	accounts["user2"] = string(TPatient)
 
 	accountsJSON, err := json.Marshal(accounts)

@@ -1,12 +1,12 @@
 // packaging 
 1.go to nfs_clientshare/chaincode/basic/packaging
-2.tar cfz code.tar.gz connection.json && tar cfz basic-org1.tgz code.tar.gz metadata.json
+2.tar cfz code.tar.gz connection.json && tar cfz basic-org1.tgz code.tar.gz metadata.json && rm -rf code.tar.gz && nano connection.json
   //update connection.json [for org2 and org3]
-4.rm -rf code.tar.gz && nano connection.json
-6.tar cfz code.tar.gz connection.json && tar cfz basic-org2.tgz code.tar.gz metadata.json
+4.
+6.tar cfz code.tar.gz connection.json && tar cfz basic-org2.tgz code.tar.gz metadata.json && rm -rf code.tar.gz && nano connection.json
 
   //update connection.json [for org2 and org3]
-10.rm -rf code.tar.gz && nano connection.json
+
 12.tar cfz code.tar.gz connection.json && tar cfz basic-org3.tgz code.tar.gz metadata.json
 
 // install chaincode package [need to install for 3 org ]

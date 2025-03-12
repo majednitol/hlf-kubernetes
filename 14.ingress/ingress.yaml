@@ -19,27 +19,27 @@ spec:
                 name: api
                 port:
                   number: 4000
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: explorer
-                port:
-                  number: 80
-          - path: /explorer
-            pathType: Prefix
-            backend:
-              service:
-                name: explorer
-                port:
-                  number: 8080
-          - path: /grafana
-            pathType: Prefix
-            backend:
-              service:
-                name: grafana
-                port:
-                  number: 3000
+          # - path: /api
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: explorer
+          #       port:
+          #         number: 80
+          # - path: /explorer
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: explorer
+          #       port:
+          #         number: 8080
+          # - path: /grafana
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: grafana
+          #       port:
+          #         number: 3000
 
   # Uncomment the below section if you want TLS enabled in the future
   # tls:

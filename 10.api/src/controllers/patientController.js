@@ -1,4 +1,4 @@
-import { shareOwnData } from "../services/dataService.js";
+import { revokeAccess, shareOwnData } from "../services/dataService.js";
 import { AcceptByPatient, GetDiseaseNames, getPatient, getPatientDataFromDoctor, GetPendingRequestedUser, setPatient, setPatientPersonalData } from "../services/patientService.js";
 
 const chaincodeName = "basic";
@@ -167,3 +167,24 @@ export async function acceptByPatient(req, res) {
         res.status(500).send(error)
     }
 }
+
+export async function revokeAccessDataByPatient(req, res) {
+    try {
+        let payload = {
+            "org": req.body.org,
+            "channelName": channelName,
+            "chaincodeName": chaincodeName,
+            "suserId": req.userId,
+            "rUserId": req.body.rUserId,
+
+        }
+        console.log("payload", payload)
+        let result = await revokeAccess(payload);
+        console.log(result)
+        res.send(result)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
+
