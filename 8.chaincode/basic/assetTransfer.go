@@ -217,7 +217,7 @@ type Patient struct {
 
 func NewPatient(patientID string, name string, gender string, age int, location string, birthday string, emailAddress string) Patient {
 	return Patient{
-		PatientID:           patientID,
+		 PatientID:           patientID,
 		Name:                name,
 		Gender:              gender,
 		Age:                 age,
