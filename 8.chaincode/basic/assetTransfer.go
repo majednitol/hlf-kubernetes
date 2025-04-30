@@ -1651,7 +1651,7 @@ func (s *SmartContract) GetPathologist(ctx contractapi.TransactionContextInterfa
 	return pathologist, nil
 }
 
-type MedicalResearchLab struct {
+ type MedicalResearchLab struct {
 	LabID           string              `json:"labID"`
 	Name            string              `json:"name"`
 	LicenseID       int                 `json:"licenseID"`
