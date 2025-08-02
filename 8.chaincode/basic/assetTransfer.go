@@ -1198,13 +1198,6 @@ func (sc *SmartContract) AddPrescription(ctx contractapi.TransactionContextInter
     return nil
 }
 
-
-
-
-
-
-
-
 // Helper function to check if a value exists in a slice
 func contains(slice []string, value string) bool {
 	for _, v := range slice {
